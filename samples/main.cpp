@@ -53,13 +53,31 @@ public:
 	
 	}
 };
-
+void logger();
 int main()
 {
+	logger();
 	theLogics.setup();
 	
 	Server server;
 	server.init("127.0.0.1",1235);
 	
 	server.go();
+}
+#include <log4cxx/logger.h>
+#include <log4cxx/PropertyConfigurator.h>
+
+using namespace std;
+using namespace log4cxx;
+void logger()
+{
+	string trace = "fa";
+    string Property = "./log.properties";
+    log4cxx::PropertyConfigurator::configure(Property);
+    LoggerPtr logger = Logger::getLogger(trace);
+    logger->info("info, How to use?");
+    logger->debug("debug, How to use?");
+    logger->warn("warn, How to use?");
+    logger->error("error, How to use?");
+
 }

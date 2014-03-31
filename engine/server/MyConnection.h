@@ -14,6 +14,8 @@ public:
 		errorTimeOutCount = 0;
 		logics = NULL;
 		addTickLogic(2000,&MyConnection::doTick);
+		BIND_NET_FUNCTION(MyConnection,recvTick);
+		theTick.addTick(this);
 	}
 	LogicCenter *logics;
 	virtual void send(void *cmd,unsigned int len)
@@ -29,7 +31,8 @@ public:
 	REMOTE_CLASS(MyConnection);
 	REMOTE_FUNCTION_1(recvTick,unsigned int)
 	{
-		printf("时钟滴答确定网络活跃\n");
+		if (this->checkValid())
+			printf("时钟滴答确定网络活跃\n");
 		errorTimeOutCount = 0;
 	}
 	unsigned int errorTimeOutCount;
@@ -73,6 +76,7 @@ public:
 	void doTick()
 	{
 		MyConnection::R_recvTick(this,errorTimeOutCount);
+		printf("Connection 时钟滴答\n");
 	}
 	void registerLogics(LogicCenter *l)
 	{

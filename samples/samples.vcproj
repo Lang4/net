@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)engine&quot;;&quot;$(SolutionDir)engine/netbase&quot;;&quot;$(SolutionDir)engine/server&quot;;&quot;$(SolutionDir)engine/remote&quot;;&quot;$(SolutionDir)engine/thread&quot;;&quot;$(SolutionDir)server&quot;"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)engine&quot;;&quot;$(SolutionDir)engine/netbase&quot;;&quot;$(SolutionDir)engine/server&quot;;&quot;$(SolutionDir)engine/remote&quot;;&quot;$(SolutionDir)engine/thread&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -169,7 +169,19 @@
 	</References>
 	<Files>
 		<File
+			RelativePath=".\Info.h"
+			>
+		</File>
+		<File
 			RelativePath=".\main.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\ManagerLogic.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\ManagerLogic.h"
 			>
 		</File>
 	</Files>

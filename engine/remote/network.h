@@ -61,7 +61,7 @@ namespace net{
 #define BIND_NET_FUNCTION(CLASS,FUNC) remote::bind(CLASS::N_##FUNC().c_str(),&CLASS::FUNC); 
 
 
-#define REMOTE_CLASS(NAME); static const char * C_NAME(){return #NAME;}
+#define REMOTE_CLASS(NAME); static const char * C_NAME(){return #NAME;} void NAME::__init__();
 
 #define BEGIN_REMOTE_LOGIC(NAME) class NAME{ public:static const char * C_NAME(){return #NAME;}
 
@@ -70,3 +70,4 @@ namespace net{
 #define REMOTE_FUNCTION(NAME)  static std::string N_##NAME(){std::stringstream ss; ss <<C_NAME()<<":"<<#NAME;return ss.str();}
 
 #define FUNCTION(NAME) static std::string N_##NAME(){std::stringstream ss; ss <<C_NAME()<<":"<<#NAME;return ss.str();} void FUNC
+

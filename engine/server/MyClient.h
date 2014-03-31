@@ -1,3 +1,4 @@
+#pragma once
 #include "mynet.h"
 #include "MyPool.h"
 #include <map>
@@ -120,7 +121,8 @@ public:
 				else
 				{
 					client->errorTimeOutCount ++;
-					MyConnection::R_recvTick(client,client->errorTimeOutCount);
+					//MyConnection::R_recvTick(client,client->errorTimeOutCount);
+					//printf("·¢³öÊ±ÖÓµÎ´ð\n");
 				}
 			}
 		}

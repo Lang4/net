@@ -72,6 +72,7 @@ namespace mynet{
 			if (outEvt)
 				outEvt->redo();
 		}
+		bool checkValid(){return socket != -1;}
     };
     /**
      * *************************Client ********************************
@@ -92,7 +93,6 @@ namespace mynet{
         unsigned short port;
         static int init(const char *ip,unsigned short port);
         void close();
-		bool checkValid(){return socket != -1;}
     };
     /**
      **************************Server**********************************

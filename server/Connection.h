@@ -11,8 +11,6 @@ public:
 	LogicConnection(){
 	
 	}
-	ManagerLogic manager;
-	GatewayLogic gateway;
 	void beInit();
 	bool beFinal();
 };

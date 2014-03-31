@@ -2,8 +2,11 @@
 #include "mynet.h"
 #include "MyPool.h"
 #include "MyConnection.h"
+#include "mythread.h"
+#include <map>
+#include <string>
 template<typename CONNECTION>
-class MyServer:public mynet::stGetPackage{
+class MyServer:public mynet::stGetPackage,public thread::Thread{
 public:
 	virtual void beInit() {};
 	virtual void beFinal(){};
@@ -23,8 +26,12 @@ public:
 		stop = false;
 		nodeType = 0;
 	}
-	bool stop;
 	void go()
+	{
+		run();
+	}
+	bool stop;
+	void run()
 	{
 		beInit();
 		while (!stop)
@@ -90,11 +97,33 @@ public:
 	unsigned int nodeType;
 };
 
-
+class Logic{
+public:
+	std::string className;
+	virtual void __init__() = 0;
+	
+	net::Connection * getConnection()
+	{
+		return conn;
+	}
+	net::Connection *conn;
+	Logic()
+	{
+		conn = NULL;
+	}
+};
 
 class Logics:public LogicCenter{
 public:
-	virtual void dispatch(MyConnection *connection,const std::string &className,char *cmd,unsigned int len);
+	virtual void dispatch(MyConnection *connection,const std::string &className,char *cmd,unsigned int len)
+	{
+		LOGICS_ITER iter = logics.find(className);
+		if (iter != logics.end())
+		{
+			iter->second->conn = connection;
+			remote::call(iter->second,cmd,len);
+		}
+	}
 	Logics()
 	{
 	
@@ -113,7 +142,22 @@ public:
 		init();
 	}
 
-	void init();
+	void init()
+	{}
+	std::map<std::string,Logic*> logics;
+	typedef std::map<std::string,Logic*>::iterator LOGICS_ITER;
 };
 
 #define theLogics Logics::getMe()
+
+struct AutoRun_NetLogic
+{
+	AutoRun_NetLogic(const std::string &name,Logic *logic)
+	{
+		theLogics.logics[name] = logic;
+		logic->__init__();
+	}
+};
+
+
+#define CLASS_MAP(NAME) AutoRun_NetLogic NAME##AutoRun_NetLogic(#NAME,new NAME()); void NAME::__init__()

@@ -13,22 +13,14 @@ void Server::beInit()
 	
 	theTick.addTick(new ManagerTick());
 }
-void Logics::init()
+
+void Client::beInit()
 {
-	BIND_NET_FUNCTION(ManagerLogic,reqLogin);
-	BIND_NET_FUNCTION(GatewayLogic,test);
-	BIND_NET_FUNCTION(MyConnection,recvTick);
-}
-void Logics::dispatch(MyConnection *connection,const std::string &className,char *cmd,unsigned int len)
-{
-	LogicConnection* logic = (LogicConnection*) connection;
-	if (className == ManagerLogic::C_NAME())
+	if (this->checkValid())
 	{
-		remote::call(&logic->manager,cmd,len);
-	}
-	else if (className == GatewayLogic::C_NAME())
-	{
-		remote::call(&logic->gateway,cmd,len);
+		PhysicNodeInfo info;
+		ManagerLogic::R_reqLogin(this,info);
+		printf("ManagerLogic::R_reqLogin\n");
 	}
 }
 void Server::beFinal()
@@ -37,9 +29,8 @@ void Server::beFinal()
 }
 void init()
 {
-	//remote::call(theClients.get(managerIP,managerPort),"ManagerLogic::reqLogin");
-	//TimeTick::getMe().start();
-	//join();
+	PhysicNodeInfo info;
+	ManagerLogic::R_reqLogin(URL<Client>::Get(managerIP,1235),info);
 }
 /**
  * ./Service manager | 启动manager
@@ -64,14 +55,15 @@ void init()
  * Manager 设定运行各个节点 
  **/
 
-int main()
+int main(int args,char* argv[])
 {
 	theLogics.setup();
-	if (1) // 如果是管理节点
+	if (args == 1) // 如果是管理节点
 	{
 		server.init(managerIP,port);
 		server.go();
 	}
 	else
 		init();
+
 }

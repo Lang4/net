@@ -10,9 +10,26 @@
 #pragma once
 #include "MyServer.h"
 #include "Connection.h"
+#include "MyClient.h"
+#include "MyTick.h"
+#include "ManagerLogic.h"
 class Server:public MyServer<LogicConnection>{
 public:
 	void beInit();
 	void beFinal();
 };
 extern Server server;
+
+class Client:public MyClient{
+public:
+	Client(const char *ip,unsigned short port):MyClient(ip,port){
+		theTick.addTick(this);
+		this->registerLogics(&theLogics);
+	}
+	void beInit();
+	bool beFinal()
+	{
+		socket = -1;
+		return false;
+	}
+};

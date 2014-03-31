@@ -12,10 +12,6 @@ public:
 	{
 		
 	}
-	virtual void doCmd(void*cmd,unsigned int len) 
-	{
-		
-	}
 };
 /**
  * 每个客户端
@@ -54,19 +50,6 @@ public:
 	}
 };
 
-/** 
- * 逻辑转发器
- * className 指定了协议父类 
- **/
-void Logics::dispatch(MyConnection *connection,const std::string &className,char *cmd,unsigned int len)
-{
-
-}
-
-void Logics::init()
-{
-	BIND_NET_FUNCTION(MyConnection,recvTick);
-}
 int main()
 {
 	theLogics.setup();

@@ -87,12 +87,6 @@ namespace remote{
 	template<typename A>
 	struct remove_pointer< A * > { typedef  A type; };
 
-	struct function{
-		virtual void call(const char *content,unsigned int len){};
-		virtual void call(void *object,const char *content,unsigned int len){};
-		std::string name;
-		virtual ~function(){}
-	};
 	template<typename TYPE>
 	struct base_type{
 		static bool toStream(TYPE &type,cmd::Stream *ss)
@@ -190,6 +184,96 @@ namespace remote{
 			>::type>::type::parseStream(object,ss);
 		return true;
 	}
+	template<unsigned char x,unsigned char y>
+	struct Head{
+		enum{
+			X = x,
+			Y = y,
+		};
+	};
+	/**
+	 * 可使用模板进行内存使用上的优化
+	 */
+	struct function{
+		virtual void call(const char *content,unsigned int len){};
+		virtual void call(void *object,const char *content,unsigned int len){};
+		std::string name;
+		enum INDEXTYPE{
+			STRING,
+			USHORT,
+			XY,
+		} indexType;
+		unsigned short index;
+		unsigned char x;
+		unsigned char y;
+		void set(const std::string &name)
+		{
+			this->name = name;
+			indexType = STRING;
+		}
+		void set(unsigned short index)
+		{
+			this->index = index;
+			indexType = USHORT;
+		}
+		void set(unsigned char x,unsigned char y)
+		{
+			this->x = x;
+			this->y = y;
+			indexType = XY;
+		}
+		template<typename HEAD>
+		void set(HEAD head)
+		{
+			this->x = HEAD::X;
+			this->y = HEAD::Y;
+			indexType = XY;
+		}
+		void parseIndex(cmd::Stream *ss)
+		{
+			switch(indexType)
+			{
+				case STRING:
+				{
+					parseStream(name,ss);
+				}break;
+				case XY:
+				{
+					parseStream(x,ss);
+					parseStream(y,ss);
+				}break;
+				case USHORT:
+				{
+					parseStream(index,ss);
+				}break;
+			}
+		}
+		void toIndex(cmd::Stream *ss)
+		{
+			switch(indexType)
+			{
+				case STRING:
+				{
+					toStream(name,ss);
+				}break;
+				case XY:
+				{
+					toStream(x,ss);
+					toStream(y,ss);
+				}break;
+				case USHORT:
+				{
+					toStream(index,ss);
+				}break;
+			}
+		}
+		virtual ~function(){}
+		function()
+		{
+			x = y = 0;
+			index = 0;
+		}
+	};
 
 #define PASRE_ARG(T,obj) \
 	typename remove_pointer<typename remove_const<typename remove_ref<typename charstostring<T>::type>::type>::type >::type obj;	\
@@ -198,14 +282,14 @@ namespace remote{
 #define BEGIN_PARSE \
 	cmd::BinaryStream ss;\
 	ss.set((void*)content,len);\
-	parseStream(name,&ss);
+	parseIndex(&ss);
 
 #define GF_CALL (*func)
 #define OF_CALL (((T*)object)->*func)
 
 #define BEGIN_STREAM \
 	cmd::BinaryStream ss;\
-	toStream(name,&ss);
+	toIndex(&ss);
 
 #define TO_STREAM(arg1) \
 	toStream(arg1,&ss);
@@ -573,11 +657,11 @@ namespace remote{
 			static Messages msg;
 			return msg;
 		}
-		void addMessage(const char *name,function *func)
+		void addMessage(const std::string & name,function *func)
 		{
 			name_messages[name] = func;
 		}
-		function * getMessage(const char *name)
+		function * getMessage(const std::string & name)
 		{
 			NAME_MESSAGES_ITER iter = name_messages.find(name);
 			if (iter != name_messages.end())
@@ -587,11 +671,12 @@ namespace remote{
 			return NULL;
 		}
 		std::vector<function*> id_messages;
-		void addMessage(unsigned int index,function *func)
+		void addMessage(unsigned short index,function *func)
 		{
+			if (index < id_messages.size()) id_messages.resize(index+1);
 			id_messages[index] = func;
 		}
-		function * getMessage(unsigned int index)
+		function * getMessage(unsigned short index)
 		{
 			if (index < id_messages.size())
 			{
@@ -599,31 +684,27 @@ namespace remote{
 			}
 			return NULL;
 		}
+
+		std::vector<std::vector<function*> > xy_messages;
+		void addMessage(unsigned char x,unsigned char y,function *func)
+		{
+			if (x < xy_messages.size()) xy_messages.resize(x+1);
+			if (y < xy_messages[x].size()) xy_messages[x].resize(y + 1);
+			xy_messages[x][y] = func;
+		}
+		function * getMessage(unsigned char x,unsigned char y)
+		{
+			if (x < xy_messages.size())
+			{
+				 if(y < xy_messages[x].size())
+				 {
+					return xy_messages[x][y];
+				 }
+			}
+			return NULL;
+		}
 	};
-#if (0)
-	template<typename INDEX>
-	bool call(INDEX func,const char *content,unsigned int size)
-	{
-		function * msg = Messages::getMe().getMessage(func);
-		if (msg)
-		{
-			msg->call(content,size);
-			return true;
-		}
-		return false;
-	}
-	template<typename INDEX,typename T>
-	bool call(INDEX func,T object,const char *content,unsigned int size)
-	{
-		function * msg = Messages::getMe().getMessage(func);
-		if (msg)
-		{
-			msg->call(object,content,size);
-			return true;
-		}
-		return false;
-	}
-#endif
+
 	template<typename T>
 	bool call(T* object,const char *content,unsigned int size)
 	{
@@ -639,71 +720,168 @@ namespace remote{
 		}
 		return false;
 	}
-
-	template<typename RVAL,typename T1>
-	void bind(const char *name, RVAL (*func)(T1 arg1))
+	
+	template<typename T>
+	bool call_id(T* object,const char *content,unsigned int size)
+	{
+		cmd::BinaryStream ss;
+		ss.set((void*)content,size);
+		unsigned short index = 0;
+		parseStream(index,&ss);
+		function * msg = Messages::getMe().getMessage(index);
+		if (msg)
+		{
+			msg->call(object,content,size);
+			return true;
+		}
+		return false;
+	}
+	
+	template<typename T>
+	bool call_xy(T* object,const char *content,unsigned int size)
+	{
+		cmd::BinaryStream ss;
+		ss.set((void*)content,size);
+		unsigned char x = 0;
+		unsigned char y = 0;
+		parseStream(x,&ss);
+		parseStream(y,&ss);
+		function * msg = Messages::getMe().getMessage(x,y);
+		if (msg)
+		{
+			msg->call(object,content,size);
+			return true;
+		}
+		return false;
+	}
+	// 一个参数
+	template<typename INDEX,typename RVAL,typename T1>
+	void bind(INDEX name, RVAL (*func)(T1 arg1))
 	{
 		message<RVAL,typename charstostring<T1>::type> *msg = new message<RVAL,typename charstostring<T1>::type>();
 		msg->bind(func);
-		func->name = name;
+		func->set(name);
 		Messages::getMe().addMessage(name,msg);
 	}
-	template<typename RVAL,typename T,typename T1>
-	void bind(const char *name, RVAL (T::*func)(T1 arg1))
+	template<typename INDEX,typename RVAL,typename T,typename T1>
+	void bind(INDEX name, RVAL (T::*func)(T1 arg1))
 	{
 		omessage<RVAL,T,T1> *mes = new omessage<RVAL,T,T1>();
 		mes->bind(func);
-		mes->name = name;
+		mes->set(name);
 		Messages::getMe().addMessage(name,mes);
 	}
 
-	template<typename RVAL,typename T1>
-	std::string build(const char *func,T1 t1)
+	template<typename INDEX,typename RVAL,typename T1>
+	std::string build(INDEX func,T1 t1)
 	{
 		message<RVAL,typename charstostring<T1>::type> msg;
-		msg.name = func;	
+		msg.set(func);	
 		return msg.build(t1);
 	}
-/*
-	template<typename T1>
-	std::string build(T1 t1)
-	{
-		message<int,typename charstostring<T1>::type> msg;
-		return msg.build(t1);
-	}
-*/
+
 	// 两个参数
-	template<typename RVAL,typename T1,typename T2>
-	void bind(const char * name, RVAL (*func)(T1 arg1,T2 arg2))
+	template<typename INDEX,typename RVAL,typename T1,typename T2>
+	void bind(INDEX name, RVAL (*func)(T1 arg1,T2 arg2))
 	{
 		message<RVAL,typename charstostring<T1>::type,typename charstostring<T2>::type> *msg = new message<RVAL,typename charstostring<T1>::type,typename charstostring<T2>::type>();
 		msg->bind(func);
-		func->name = name;
+		func->set(name);
 		Messages::getMe().addMessage(name,msg);
 	}
-	template<typename RVAL,typename T,typename T1,typename T2>
-	void bind(const char * name, RVAL (T::*func)(T1 arg1,T2 arg2))
+	template<typename INDEX,typename RVAL,typename T,typename T1,typename T2>
+	void bind(INDEX name, RVAL (T::*func)(T1 arg1,T2 arg2))
 	{
 		omessage<RVAL,T,T1,T2> *message = new omessage<RVAL,T,T1,T2>();
 		message->bind(func);
-		func->name = name;
+		message->set(name);
 		Messages::getMe().addMessage(name,message);
 	}
 
-	template<typename RVAL,typename T1,typename T2>
-	std::string build(const char * func,T1 t1,T2 t2)
+	template<typename INDEX,typename RVAL,typename T1,typename T2>
+	std::string build(INDEX func,T1 t1,T2 t2)
 	{
-		message<RVAL,typename charstostring<T1>::type,typename charstostring<T2>::type> * msg = (message<RVAL,typename charstostring<T1>::type,typename charstostring<T2>::type> *)Messages::getMe().getMessage(func);
-		if (msg)
-			return msg->build(t1,t2);
-		return "";
-	}
-/*
-	template<typename T1,typename T2>
-	std::string build(T1 t1,T2 t2)
-	{
-		message<int,typename charstostring<T1>::type,typename charstostring<T2>::type> msg;
+		message<RVAL,typename charstostring<T1>::type,typename charstostring<T2>::type> msg;
+		msg.set(func);
 		return msg.build(t1,t2);
 	}
-*/
+	// 三个参数
+	template<typename INDEX,typename RVAL,typename T1,typename T2,typename T3>
+	void bind(INDEX name, RVAL (*func)(T1 arg1,T2 arg2,T3 arg3))
+	{
+		message<RVAL,typename charstostring<T1>::type,typename charstostring<T2>::type,typename charstostring<T3>::type> *msg =
+			new message<RVAL,typename charstostring<T1>::type,typename charstostring<T2>::type,typename charstostring<T3>::type>();
+		msg->bind(func);
+		func->set(name);
+		Messages::getMe().addMessage(name,msg);
+	}
+	template<typename INDEX,typename RVAL,typename T,typename T1,typename T2,typename T3>
+	void bind(INDEX name, RVAL (T::*func)(T1 arg1,T2 arg2,T3 arg3))
+	{
+		omessage<RVAL,T,T1,T2,T3> *message = new omessage<RVAL,T,T1,T2,T3>();
+		message->bind(func);
+		message->set(name);
+		Messages::getMe().addMessage(name,message);
+	}
+
+	template<typename INDEX,typename RVAL,typename T1,typename T2,typename T3>
+	std::string build(INDEX func,T1 t1,T2 t2,T3 t3)
+	{
+		message<RVAL,typename charstostring<T1>::type,typename charstostring<T2>::type,typename charstostring<T3>::type> msg;
+		msg.set(func);
+		return msg.build(t1,t2,t3);
+	}
+
+	// 四个参数
+	template<typename INDEX,typename RVAL,typename T1,typename T2,typename T3,typename T4>
+	void bind(INDEX name, RVAL (*func)(T1 arg1,T2 arg2,T3 arg3,T4 arg4))
+	{
+		message<RVAL,typename charstostring<T1>::type,typename charstostring<T2>::type,typename charstostring<T3>::type,typename charstostring<T4>::type> *msg =
+			new message<RVAL,typename charstostring<T1>::type,typename charstostring<T2>::type,typename charstostring<T3>::type,typename charstostring<T4>::type>();
+		msg->bind(func);
+		func->set(name);
+		Messages::getMe().addMessage(name,msg);
+	}
+	template<typename INDEX,typename RVAL,typename T,typename T1,typename T2,typename T3,typename T4>
+	void bind(INDEX name, RVAL (T::*func)(T1 arg1,T2 arg2,T3 arg3,T4 arg4))
+	{
+		omessage<RVAL,T,T1,T2,T3,T4> *message = new omessage<RVAL,T,T1,T2,T3,T4>();
+		message->bind(func);
+		message->set(name);
+		Messages::getMe().addMessage(name,message);
+	}
+
+	template<typename INDEX,typename RVAL,typename T1,typename T2,typename T3,typename T4>
+	std::string build(INDEX func,T1 t1,T2 t2,T3 t3,T4 t4)
+	{
+		message<RVAL,typename charstostring<T1>::type,typename charstostring<T2>::type,typename charstostring<T3>::type,typename charstostring<T4>::type> msg;
+		msg.set(func);
+		return msg.build(t1,t2,t3,t4);
+	}
+	// 五个参数
+	template<typename INDEX,typename RVAL,typename T1,typename T2,typename T3,typename T4,typename T5>
+	void bind(INDEX name, RVAL (*func)(T1 arg1,T2 arg2,T3 arg3,T4 arg4,T5 arg5))
+	{
+		message<RVAL,typename charstostring<T1>::type,typename charstostring<T2>::type,typename charstostring<T3>::type,typename charstostring<T4>::type,typename charstostring<T5>::type> *msg =
+			new message<RVAL,typename charstostring<T1>::type,typename charstostring<T2>::type,typename charstostring<T3>::type,typename charstostring<T4>::type,typename charstostring<T5>::type>();
+		msg->bind(func);
+		func->set(name);
+		Messages::getMe().addMessage(name,msg);
+	}
+	template<typename INDEX,typename RVAL,typename T,typename T1,typename T2,typename T3,typename T4,typename T5>
+	void bind(INDEX name, RVAL (T::*func)(T1 arg1,T2 arg2,T3 arg3,T4 arg4,T5 arg5))
+	{
+		omessage<RVAL,T,T1,T2,T3,T4,T5> *message = new omessage<RVAL,T,T1,T2,T3,T4,T5>();
+		message->bind(func);
+		message->set(name);
+		Messages::getMe().addMessage(name,message);
+	}
+
+	template<typename INDEX,typename RVAL,typename T1,typename T2,typename T3,typename T4,typename T5>
+	std::string build(INDEX func,T1 t1,T2 t2,T3 t3,T4 t4,T5 t5)
+	{
+		message<RVAL,typename charstostring<T1>::type,typename charstostring<T2>::type,typename charstostring<T3>::type,typename charstostring<T4>::type,typename charstostring<T5>::type> msg;
+		msg.set(func);
+		return msg.build(t1,t2,t3,t4,t5);
+	}
 }

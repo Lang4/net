@@ -15,7 +15,12 @@ public:
 	 * 向管理节点注册函数(函数唯一名字,函数,参数);
 	 */
 	REMOTE_FUNCTION_1(reqLogin,const PhysicNodeInfo &);
-
+	
+	REMOTE_FUNCTION_2(reqLogin1,const PhysicNodeInfo &,int );
+	REMOTE_FUNCTION_3(reqLogin2,const PhysicNodeInfo &,int ,int );
+	REMOTE_FUNCTION_4(reqLogin3,const PhysicNodeInfo &,int ,int ,int );
+	REMOTE_FUNCTION_5(reqLogin4,const PhysicNodeInfo &,int ,int ,int ,int );
+	
 };
 
 class ManagerClient:public Logic

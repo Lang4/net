@@ -18,11 +18,15 @@ namespace mynet{
 	  */
 	 void Connection::sendCmd(void *cmd,unsigned int len)
 	 {
-		Decoder  decoder;
-		decoder.encode(cmd,len);
-		sends.write(decoder.getRecord());
-		if (outEvt)
-			doSend(outEvt,false);
+		if (checkValid())
+		{
+			Decoder  decoder;
+			decoder.encode(cmd,len);
+			sends.write(decoder.getRecord());
+
+			if (outEvt)
+				doSend(outEvt,false);
+		}
 	 }
 	 void Connection::recvCmdCallback(void *cmd,unsigned int len)
 	 {

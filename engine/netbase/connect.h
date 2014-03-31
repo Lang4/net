@@ -73,6 +73,7 @@ namespace mynet{
 				outEvt->redo();
 		}
 		bool checkValid(){return socket != -1;}
+		virtual ~Connection(){}
     };
     /**
      * *************************Client ********************************

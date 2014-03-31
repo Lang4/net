@@ -12,6 +12,10 @@ public:
 	{
 		
 	}
+	~LogicConnection()
+	{
+		printf("我卸载啦\n");
+	}
 };
 /**
  * 每个客户端
@@ -29,7 +33,7 @@ public:
 	bool beFinal()
 	{
 		socket = -1;
-		return false;
+		return true;
 	}
 };
 /** 

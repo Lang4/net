@@ -276,6 +276,10 @@
 			RelativePath=".\platfrom.h"
 			>
 		</File>
+		<File
+			RelativePath=".\pointer.h"
+			>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>

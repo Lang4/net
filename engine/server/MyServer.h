@@ -45,7 +45,7 @@ public:
 					conn->setHandle(evt->getPeerHandle());
 					thePool.bindEvent(conn,mynet::IN_EVT|mynet::OUT_EVT);
 					conn->beInit();
-		//			pool.bindEvent(&server,mynet::ACCEPT_EVT);
+					thePool.add(conn);
 					continue;
 				}
 				if (evt->isErr())
@@ -53,11 +53,15 @@ public:
 					CONNECTION *conn = (CONNECTION*) evt->target;
 					if (conn)
 					{
+						//printf("É¾³ýÍøÂçÁ¬½Ó%p\n",evt->target);
 						conn->destroy();
 						if (conn->beFinal())
-							delete conn;
+						{
+							
+						}
+						thePool.remove(conn);
 					}
-					printf("É¾³ýÍøÂçÁ¬½Ó%p\n",evt->target);
+					
 					continue;
 				}
 				if (evt->isOut()) 

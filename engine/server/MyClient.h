@@ -6,6 +6,7 @@
 #include <string>
 #include "MyConnection.h"
 #include "MyTick.h"
+#include "pointer.h"
 class MyClient:public MyConnection{
 public:
 	MyClient(const char *ip,unsigned short port):MyConnection()
@@ -51,6 +52,10 @@ public:
 	{
 		socket = -1;
 		return false;
+	}
+	~MyClient()
+	{
+		printf("Œ“–∂‘ÿ¿≤");
 	}
 }; 
 

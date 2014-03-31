@@ -15,7 +15,6 @@ public:
 		logics = NULL;
 		addTickLogic(2000,&MyConnection::doTick);
 		BIND_NET_FUNCTION(MyConnection,recvTick);
-		theTick.addTick(this);
 	}
 	LogicCenter *logics;
 	virtual void send(void *cmd,unsigned int len)

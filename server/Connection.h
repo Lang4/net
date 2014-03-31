@@ -13,4 +13,8 @@ public:
 	}
 	void beInit();
 	bool beFinal();
+	~LogicConnection()
+	{
+		printf("нри╬ЁЩак\n");
+	}
 };

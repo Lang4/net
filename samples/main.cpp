@@ -10,7 +10,7 @@ class LogicConnection:public MyConnection{
 public:
 	void beInit()
 	{
-		
+		this->registerLogics(&theLogics);
 	}
 	~LogicConnection()
 	{
@@ -47,37 +47,33 @@ public:
 		
 		PhysicNodeInfo info;
 		ManagerLogic::R_reqLogin(URL<Client>::Get("127.0.0.1",1234),info);
+
+		theTick.addTick(new ManagerTick());
 	}
 	void beFinal()
 	{
 	
 	}
 };
-void logger();
-int main()
+
+void ManagerTick::tick()
 {
-	logger();
-	theLogics.setup();
-	
-	Server server;
-	server.init("127.0.0.1",1235);
-	
-	server.go();
+	{
+		// 遍历节点信息 若节点信息达到需求
+		// 广播节点信息 各个节点自由建立节点连接
+		printf("ManagerTick::tick\n");
+		PhysicNodeInfo info;
+		//ManagerLogic::R_reqLogin(URL<Client>::Get("127.0.0.1",1234),info);
+	}
 }
-#include <log4cxx/logger.h>
-#include <log4cxx/PropertyConfigurator.h>
-
-using namespace std;
-using namespace log4cxx;
-void logger()
+int main(int argc,char* args[])
 {
-	string trace = "fa";
-    string Property = "./log.properties";
-    log4cxx::PropertyConfigurator::configure(Property);
-    LoggerPtr logger = Logger::getLogger(trace);
-    logger->info("info, How to use?");
-    logger->debug("debug, How to use?");
-    logger->warn("warn, How to use?");
-    logger->error("error, How to use?");
-
+	theLogics.setup();
+	if (argc == 2)
+	{
+		Server server;
+		server.init("127.0.0.1",atoi(args[1]));
+		
+		server.go();
+	}
 }

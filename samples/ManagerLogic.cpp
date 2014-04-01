@@ -12,7 +12,7 @@ CLASS_MAP(ManagerLogic)
 
 void ManagerLogic::reqLogin(const PhysicNodeInfo &info)
 {
-	
+	printf("hello,world");
 }
 
 void ManagerLogic::reqLogin1(const PhysicNodeInfo &info,int a)

@@ -3,6 +3,7 @@
 #include "network.h"
 #include "MyTick.h"
 #include "MyServer.h"
+#include "MyClient.h"
 /**
  * 管理服务器的服务逻辑
  */
@@ -39,10 +40,6 @@ public:
 	/**
 	 * 5s定时设备
 	 */
-	void tick()
-	{
-		// 遍历节点信息 若节点信息达到需求
-		// 广播节点信息 各个节点自由建立节点连接
-		printf("ManagerTick::tick\n");
-	}
+	void tick();
+	
 };

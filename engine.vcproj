@@ -21,7 +21,7 @@
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="4"
-			CharacterSet="2"
+			CharacterSet="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)engine&quot;;&quot;$(SolutionDir)engine/netbase&quot;;&quot;$(SolutionDir)engine/server&quot;;&quot;$(SolutionDir)engine/thread&quot;;&quot;$(SolutionDir)engine/logger&quot;"
+				AdditionalIncludeDirectories="$(SolutionDir)engine;$(SolutionDir)engine/netbase;$(SolutionDir)engine/server;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -272,22 +272,6 @@
 				>
 			</File>
 		</Filter>
-		<Filter
-			Name="logger"
-			>
-			<File
-				RelativePath=".\logger\logger.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\logger\logger.h"
-				>
-			</File>
-		</Filter>
-		<File
-			RelativePath=".\archive.h"
-			>
-		</File>
 		<File
 			RelativePath=".\platfrom.h"
 			>

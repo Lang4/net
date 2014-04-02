@@ -3,6 +3,8 @@
 #include "network.h"
 #include "MyClient.h"
 #include "ManagerLogic.h"
+#include "logger.h"
+#include "archive.h"
 /**
  * 每个连接的处理
  */
@@ -36,6 +38,8 @@ public:
 		return true;
 	}
 };
+
+Logger logger;
 /** 
  * 服务节点
  **/
@@ -49,6 +53,9 @@ public:
 		ManagerLogic::R_reqLogin(URL<Client>::Get("127.0.0.1",1234),info);
 
 		theTick.addTick(new ManagerTick());
+
+		logger.put("INFO");
+
 	}
 	void beFinal()
 	{
@@ -61,13 +68,15 @@ void ManagerTick::tick()
 	{
 		// 遍历节点信息 若节点信息达到需求
 		// 广播节点信息 各个节点自由建立节点连接
-		printf("ManagerTick::tick\n");
+		NET_LOG("ManagerTick::tick\n");
 		PhysicNodeInfo info;
 		//ManagerLogic::R_reqLogin(URL<Client>::Get("127.0.0.1",1234),info);
 	}
 }
 int main(int argc,char* args[])
 {
+	logger.init("Manager");
+	logger.start();
 	theLogics.setup();
 	if (argc == 2)
 	{

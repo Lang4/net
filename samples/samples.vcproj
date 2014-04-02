@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)engine&quot;;&quot;$(SolutionDir)engine/netbase&quot;;&quot;$(SolutionDir)engine/server&quot;;&quot;$(SolutionDir)engine/remote&quot;;&quot;$(SolutionDir)engine/thread&quot;"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)engine&quot;;&quot;$(SolutionDir)engine/netbase&quot;;&quot;$(SolutionDir)engine/server&quot;;&quot;$(SolutionDir)engine/remote&quot;;&quot;$(SolutionDir)engine/thread&quot;;&quot;$(SolutionDir)log4cxx&quot;;&quot;$(SolutionDir)engine/logger&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -61,9 +61,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="engine.lib"
+				AdditionalDependencies="engine.lib log4cxx.lib"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="$(SolutionDir)$(ConfigurationName)"
+				AdditionalLibraryDirectories="&quot;$(SolutionDir)$(ConfigurationName)&quot;;&quot;$(SolutionDir)log4cxx\lib&quot;"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				TargetMachine="1"
@@ -168,6 +168,14 @@
 	<References>
 	</References>
 	<Files>
+		<Filter
+			Name="archive"
+			>
+			<File
+				RelativePath=".\testArchive.cpp"
+				>
+			</File>
+		</Filter>
 		<File
 			RelativePath=".\Info.h"
 			>

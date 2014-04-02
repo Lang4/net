@@ -7,6 +7,7 @@
 #include "MyConnection.h"
 #include "MyTick.h"
 #include "pointer.h"
+#include "logger.h"
 class MyClient:public MyConnection{
 public:
 	MyClient(const char *ip,unsigned short port):MyConnection()
@@ -55,7 +56,7 @@ public:
 	}
 	~MyClient()
 	{
-		printf("我卸载啦");
+		NET_LOG("我卸载啦");
 	}
 }; 
 
@@ -114,14 +115,14 @@ public:
 			if (client && !client->checkValid())
 			{
 				client->reconnect();
-				printf("尝试重连\n");
+				NET_LOG("尝试重连\n");
 			}
 			if (client && client->checkValid())
 			{
 				if (client->errorTimeOutCount >= 10)
 				{
 					client->close();
-					printf("超时关闭自身 %d",client->errorTimeOutCount);
+					NET_LOG("超时关闭自身 %d",client->errorTimeOutCount);
 				}
 				else
 				{

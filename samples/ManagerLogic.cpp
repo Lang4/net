@@ -12,7 +12,7 @@ CLASS_MAP(ManagerLogic)
 
 void ManagerLogic::reqLogin(const PhysicNodeInfo &info)
 {
-	printf("hello,world");
+	NET_LOG("hello,world");
 }
 
 void ManagerLogic::reqLogin1(const PhysicNodeInfo &info,int a)
@@ -39,5 +39,5 @@ CLASS_MAP(ManagerClient)
 
 void ManagerClient::retStart(const LogicNodeInfo &info)
 {
-	printf("ManagerClient::retStart %s\n",info.ip);
+	NET_LOG("ManagerClient::retStart %s\n",info.ip);
 }

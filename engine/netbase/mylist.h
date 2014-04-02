@@ -65,11 +65,12 @@ namespace mynet{
         }
         ~MyList()
         {
-            if (writePointer)
+            if (writePointer != readPointer)
             {
                 delete writePointer;
             }
             writePointer = 0;
+			readPointer = 0;
         }
     };
 };

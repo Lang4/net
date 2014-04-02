@@ -2,6 +2,7 @@
 #include "mynet.h"
 #include "network.h"
 #include "MyTick.h"
+#include "logger.h"
 class MyConnection;
 class LogicCenter{
 public:
@@ -31,7 +32,7 @@ public:
 	REMOTE_FUNCTION_1(recvTick,unsigned int)
 	{
 		if (this->checkValid())
-			printf("时钟滴答确定网络活跃\n");
+			NET_LOG("时钟滴答确定网络活跃");
 		errorTimeOutCount = 0;
 	}
 	unsigned int errorTimeOutCount;
@@ -75,7 +76,7 @@ public:
 	void doTick()
 	{
 		MyConnection::R_recvTick(this,errorTimeOutCount);
-		printf("Connection 时钟滴答\n");
+		NET_LOG("Connection 时钟滴答");
 	}
 	void registerLogics(LogicCenter *l)
 	{

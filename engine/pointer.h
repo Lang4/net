@@ -17,13 +17,14 @@ class Pointer:public OO{
     public:  
         Pointer(T *t):pc(new _counter(1)){  
             this->pt = t;  
+			state = 0;
         }  
   
         Pointer(const Pointer<T> &rhs){  
             this->pc = rhs.pc;  
             this->pt = rhs.pt;  
             retain();
-             
+            state = 0; 
         }  
 		void release()
 		{
@@ -43,7 +44,8 @@ class Pointer:public OO{
 		}
         Pointer<T>& operator=(const Pointer<T> rhs){  
             this->pt = rhs.pt;  
-            this->pc = rhs.pc;  
+            this->pc = rhs.pc; 
+			this->state = rhs.state;
             retain();
             return *this;  
         }  
@@ -54,7 +56,16 @@ class Pointer:public OO{
 		{
 			return pt;
 		}
+		void setState(char state)
+		{
+			this->state = state;
+		}
+		bool checkState(char state)
+		{
+			return this->state == state;
+		}
     private:  
         T *pt;  
+		char state;
         _counter* pc;  
 };  

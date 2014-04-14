@@ -1,374 +1,229 @@
-#pragma once
-#include "platfrom.h"
-#if PLATFORM == PLATFORM_WIN32
-	#define MY_HANDLE void*
-	#define MY_API  __stdcall
-	#define MY_MUTEX_HANDLE void*
-	#define MY_COND_HANDLE void* 
-	#define MY_RW_LOCK_HANDLE void*
-#else 
-	#define MY_HANDLE pthread_t // µ±·Çwindows ÊÇ½« HANDLEÉèÖÃÎª int
-	#define MY_API
-	#define MY_MUTEX_HANDLE pthread_mutex_t
-	#define MY_COND_HANDLE pthread_cond_t
-	#define MY_RW_LOCK_HANDLE pthread_rwlock_t 
-#endif
-#include <list>
+//
+//  mythread.h
+//  NewThread
+//
+//  Created by å­£ é‡‘é¾™ on 14-4-13.
+//  Copyright (c) 2014å¹´ å­£ é‡‘é¾™. All rights reserved.
+//
+
+#ifndef NewThread_mythread_h
+#define NewThread_mythread_h
 #include <vector>
 #include <string>
-/**
- * ÉùÃ÷Àà¼¯ºÏ
- **/
-namespace thread{
-	class Con;
-	class Mutex;
-	class RWLock;
-	class RWLock_scope_rdlock;
-	class Thread;
-	class ThreadGroup;
-};
-
-namespace thread{
-	class Mutex
-	{
-	public:
-		/**
-		* \brief ¹¹Ôìº¯Êý£¬¹¹ÔìÒ»¸ö»¥³âÌå¶ÔÏó
-		*
-		*/
-		Mutex();
-
-		/**
-		* \brief Îö¹¹º¯Êý£¬Ïú»ÙÒ»¸ö»¥³âÌå¶ÔÏó
-		*
-		*/
-		~Mutex();
-
-		/**
-		* \brief ¼ÓËøÒ»¸ö»¥³âÌå
-		*
-		*/
-		inline void lock();
-
-		/**
-		* \brief ½âËøÒ»¸ö»¥³âÌå
-		*
-		*/
-		inline void unlock();
-
-		MY_MUTEX_HANDLE	 m_hMutex;    /**< ÏµÍ³»¥³âÌå */
-	};
-
-	/**
-	* \brief Wrapper
-	* ·½±ãÔÚ¸´ÔÓº¯ÊýÖÐËøµÄÊ¹ÓÃ
-	*/
-	class Mutex_scope_lock
-	{
-	public:
-		/**
-		* \brief ¹¹Ôìº¯Êý
-		* ¶ÔËø½øÐÐlock²Ù×÷
-		* \param m ËøµÄÒýÓÃ
-		*/
-		Mutex_scope_lock(Mutex &m);
-		/**
-		* \brief Îö¹ºº¯Êý
-		* ¶ÔËø½øÐÐunlock²Ù×÷
-		*/
-		~Mutex_scope_lock();
-	private:
-
-		/**
-		* \brief ËøµÄÒýÓÃ
-		*/
-		Mutex &mlock;
-	};
-	/**
-	* \brief ·â×°ÁËÏµÍ³¶ÁÐ´Ëø£¬Ê¹ÓÃÉÏÒª¼òµ¥£¬Ê¡È¥ÁËÊÖ¹¤³õÊ¼»¯ºÍÏú»ÙÏµÍ³¶ÁÐ´ËøµÄ¹¤×÷£¬ÕâÐ©¹¤×÷¶¼¿ÉÒÔÓÉ¹¹Ôìº¯ÊýºÍÎö¹¹º¯ÊýÀ´×Ô¶¯Íê³É
-	*
-	*/
-	class RWLock
-	{
-
-	public:
-		/**
-		* \brief ¹¹Ôìº¯Êý£¬ÓÃÓÚ´´½¨Ò»¸ö¶ÁÐ´Ëø
-		*
-		*/
-		RWLock();
-		/**
-		* \brief Îö¹¹º¯Êý£¬ÓÃÓÚÏú»ÙÒ»¸ö¶ÁÐ´Ëø
-		*
-		*/
-		~RWLock();
-		/**
-		* \brief ¶Ô¶ÁÐ´Ëø½øÐÐ¶Á¼ÓËø²Ù×÷
-		*
-		*/
-		inline void rdlock();
-		/**
-		* \brief ¶Ô¶ÁÐ´Ëø½øÐÐÐ´¼ÓËø²Ù×÷
-		*
-		*/
-		inline void wrlock();
-		/**
-		* \brief ¶Ô¶ÁÐ´Ëø½øÐÐ½âËø²Ù×÷
-		*
-		*/
-		inline void unlock();
-	private:
-		MY_RW_LOCK_HANDLE m_hMutex;    /**< ÏµÍ³¶ÁÐ´Ëø */
-		//¶ÁÐ´¼ÆÊý²âÊÔ
-		unsigned int rd_count;
-		unsigned int wr_count;
-	};
-	/**
-	* \brief rdlock Wrapper
-	* ·½±ãÔÚ¸´ÔÓº¯ÊýÖÐ¶ÁÐ´ËøµÄÊ¹ÓÃ
-	*/
-	class RWLock_scope_rdlock
-	{
-
-	public:
-
-		/**
-		* \brief ¹¹Ôìº¯Êý
-		* ¶ÔËø½øÐÐrdlock²Ù×÷
-		* \param m ËøµÄÒýÓÃ
-		*/
-		RWLock_scope_rdlock(RWLock &m);
-		/**
-		* \brief Îö¹ºº¯Êý
-		* ¶ÔËø½øÐÐunlock²Ù×÷
-		*/
-		~RWLock_scope_rdlock();
-	private:
-
-		/**
-		* \brief ËøµÄÒýÓÃ
-		*/
-		RWLock &rwlock;
-
-	};
-
-	/**
-	* \brief wrlock Wrapper
-	* ·½±ãÔÚ¸´ÔÓº¯ÊýÖÐ¶ÁÐ´ËøµÄÊ¹ÓÃ
-	*/
-	class RWLock_scope_wrlock
-	{
-
-	public:
-
-		/**
-		* \brief ¹¹Ôìº¯Êý
-		* ¶ÔËø½øÐÐwrlock²Ù×÷
-		* \param m ËøµÄÒýÓÃ
-		*/
-		RWLock_scope_wrlock(RWLock &m);
-
-		/**
-		* \brief Îö¹ºº¯Êý
-		* ¶ÔËø½øÐÐunlock²Ù×÷
-		*/
-		~RWLock_scope_wrlock();
-	private:
-
-		/**
-		* \brief ËøµÄÒýÓÃ
-		*/
-		RWLock &rwlock;
-
-	};
-	/**
-	* \brief ·â×°ÁËÏµÍ³Ìõ¼þ±äÁ¿£¬Ê¹ÓÃÉÏÒª¼òµ¥£¬Ê¡È¥ÁËÊÖ¹¤³õÊ¼»¯ºÍÏú»ÙÏµÍ³Ìõ¼þ±äÁ¿µÄ¹¤×÷£¬ÕâÐ©¹¤×÷¶¼¿ÉÒÔÓÉ¹¹Ôìº¯ÊýºÍÎö¹¹º¯ÊýÀ´×Ô¶¯Íê³É
-	*
-	*/
-	class Cond 
-	{
-	public:
-		/**
-		* \brief ¹¹Ôìº¯Êý£¬ÓÃÓÚ´´½¨Ò»¸öÌõ¼þ±äÁ¿
-		*
-		*/
-		Cond();
-		/**
-		* \brief Îö¹¹º¯Êý£¬ÓÃÓÚÏú»ÙÒ»¸öÌõ¼þ±äÁ¿
-		*
-		*/
-		~Cond();
-
-		/**
-		* \brief ¶ÔËùÓÐµÈ´ýÕâ¸öÌõ¼þ±äÁ¿µÄÏß³Ì¹ã²¥·¢ËÍÐÅºÅ£¬Ê¹ÕâÐ©Ïß³ÌÄÜ¹»¼ÌÐøÍùÏÂÖ´ÐÐ
-		*
-		*/
-		void broadcast();
-
-		/**
-		* \brief ¶ÔËùÓÐµÈ´ýÕâ¸öÌõ¼þ±äÁ¿µÄÏß³Ì·¢ËÍÐÅºÅ£¬Ê¹ÕâÐ©Ïß³ÌÄÜ¹»¼ÌÐøÍùÏÂÖ´ÐÐ
-		*
-		*/
-		void signal();
-
-		/**
-		* \brief µÈ´ýÌØ¶¨µÄÌõ¼þ±äÁ¿Âú×ã
-		*
-		*
-		* \param m_hMutex ÐèÒªµÈ´ýµÄ»¥³âÌå
-		*/
-		void wait(Mutex &mutex);
-	private:
-		MY_COND_HANDLE m_hEvent;    /**< ÏµÍ³Ìõ¼þ±äÁ¿ */
-	};
-
-	/**
-	* \brief ·â×°ÁËÏß³Ì²Ù×÷£¬ËùÓÐÊ¹ÓÃÏß³ÌµÄ»ùÀà
-	*
-	*/
-	class Thread
-	{
-	public:
-
-		/**
-		* \brief ¹¹Ôìº¯Êý£¬´´½¨Ò»¸ö¶ÔÏó
-		*
-		* \param name Ïß³ÌÃû³Æ
-		* \param joinable ±êÃ÷Õâ¸öÏß³ÌÍË³öµÄÊ±ºòÊÇ·ñ±£´æ×´Ì¬£¬Èç¹ûÎªtrue±íÊ¾Ïß³ÌÍË³ö±£´æ×´Ì¬£¬·ñÔò½«²»±£´æÍË³ö×´Ì¬
-		*/
-		Thread(const std::string &name = std::string("zThread"),const bool joinable = true);
-
-		/**
-		* \brief Îö¹¹º¯Êý£¬ÓÃÓÚÏú»ÙÒ»¸ö¶ÔÏó£¬»ØÊÕ¶ÔÏó¿Õ¼ä
-		*
-		*/
-		virtual ~Thread();
-
-		/**
-		* \brief Ê¹µ±Ç°Ïß³ÌË¯ÃßÖ¸¶¨µÄÊ±¼ä£¬Ãë
-		*
-		*
-		* \param sec Ö¸¶¨µÄÊ±¼ä£¬Ãë
-		*/
-		static void sleep(const long sec);
-
-		/**
-		* \brief Ê¹µ±Ç°Ïß³ÌË¯ÃßÖ¸¶¨µÄÊ±¼ä£¬ºÁÃë
-		*
-		*
-		* \param msec Ö¸¶¨µÄÊ±¼ä£¬ºÁÃë
-		*/
-		static void msleep(const long msec);
-
-		/**
-		* \brief Ê¹µ±Ç°Ïß³ÌË¯ÃßÖ¸¶¨µÄÊ±¼ä£¬Î¢Ãë
-		*
-		*
-		* \param usec Ö¸¶¨µÄÊ±¼ä£¬Î¢Ãë
-		*/
-		static void usleep(const long usec);
-
-		/**
-		* \brief Ïß³ÌÊÇ·ñÊÇjoinableµÄ
-		*
-		*
-		* \return joinable
-		*/
-		const bool isJoinable() const;
-
-		/**
-		* \brief ¼ì²éÏß³ÌÊÇ·ñÔÚÔËÐÐ×´Ì¬
-		*
-		* \return Ïß³ÌÊÇ·ñÔÚÔËÐÐ×´Ì¬
-		*/
-		const bool isAlive() const;
-#if PLATFORM == PLATFORM_WIN32
-		static unsigned long MY_API threadFunc(void *arg);
-#else
-		static void* threadFunc(void *arg);
-#endif
-		bool start();
-		void join();
-
-		/**
-		* \brief Ö÷¶¯½áÊøÏß³Ì
-		*
-		* ÆäÊµÖ»ÊÇÉèÖÃ±ê¼Ç£¬ÄÇÃ´Ïß³ÌµÄrunÖ÷»Øµ÷Ñ­»·»Ø¼ì²éÕâ¸ö±ê¼Ç£¬Èç¹ûÕâ¸ö±ê¼ÇÒÑ¾­ÉèÖÃ£¬¾ÍÍË³öÑ­»·
-		*
-		*/
-		void final();
-		/**
-		* \brief ÅÐ¶ÏÏß³ÌÊÇ·ñ¼ÌÐøÔËÐÐÏÂÈ¥
-		*
-		* Ö÷ÒªÓÃÔÚrun()º¯ÊýÑ­»·ÖÐ£¬ÅÐ¶ÏÑ­»·ÊÇ·ñ¼ÌÐøÖ´ÐÐÏÂÈ¥
-		*
-		* \return Ïß³ÌÖ÷»Øµ÷ÊÇ·ñ¼ÌÐøÖ´ÐÐ
-		*/
-		const bool isFinal() const;
-		/**
-		* \brief ´¿Ðé¹¹º¯Êý£¬Ïß³ÌÖ÷»Øµ÷º¯Êý£¬Ã¿¸öÐèÒªÊµÀý»ªµÄÅÉÉúÀàÐèÒªÖØÔØÕâ¸öº¯Êý
-		*
-		* Èç¹ûÊÇÎÞÏÞÑ­»·ÐèÒªÔÚÃ¿¸öÑ­»·¼ì²éÏß³ÌÍË³ö±ê¼ÇisFinal()£¬ÕâÑùÄÜ¹»±£Ö¤Ïß³Ì°²È«ÍË³ö
-		* <pre>
-		*   while(!isFinal())
-		*   {
-		*     ...
-		*   }
-		*   </pre>
-		*
-		*/
-		virtual void run() = 0;
-		/**
-		* \brief ·µ»ØÏß³ÌÃû³Æ
-		*
-		* \return Ïß³ÌÃû³Æ
-		*/
-		const std::string &getThreadName() const;
-
-	public:
-		std::string threadName;      /**< Ïß³ÌÃû³Æ */
-		Mutex mlock;          /**< »¥³âËø */
-		volatile bool alive;      /**< Ïß³ÌÊÇ·ñÔÚÔËÐÐ */
-		volatile bool complete;
-		MY_HANDLE m_hThread;        /**< Ïß³Ì±àºÅ */
-		bool joinable;          /**< Ïß³ÌÊôÐÔ£¬ÊÇ·ñÉèÖÃjoinable±ê¼Ç */
-		Cond cond;
-	}; 
-
-	/**
-	* \brief ¶ÔÏß³Ì½øÐÐ·Ö×é¹ÜÀíµÄÀà
-	*
-	*/
-	class ThreadGroup
-	{
-
-	public:
-
-		struct Callback
+namespace mythread {
+    class IMutex{
+    public:
+        static IMutex * create();
+        virtual void lock() = 0;
+        virtual void unLock() = 0;
+        virtual ~IMutex(){}
+    };
+    class SafeLockMutex{
+    public:
+        SafeLockMutex(IMutex *mutex);
+        ~SafeLockMutex();
+    private:
+        IMutex *_mutex;
+    };
+    class IReadWriteMutex{
+    public:
+        virtual void readLock() = 0;
+        virtual void writeLock() = 0;
+        virtual void unLock() = 0;
+        virtual ~IReadWriteMutex(){}
+        static IReadWriteMutex * create();
+    };
+    class SafeLockReadMutex{
+    public:
+        SafeLockReadMutex(IReadWriteMutex *mutex);
+        ~SafeLockReadMutex();
+    private:
+        IReadWriteMutex * _mutex;
+    };
+    class SafeLockWriteMutex{
+    public:
+        SafeLockWriteMutex(IReadWriteMutex *mutex);
+        ~SafeLockWriteMutex();
+    private:
+        IReadWriteMutex * _mutex;
+    };
+    class ICondition{
+    public:
+        static ICondition * create();
+        virtual void broadcast() = 0;
+        virtual void singal() = 0;
+        virtual void wait(IMutex *mutex) = 0;
+        virtual ~ICondition(){}
+    };
+    class Runnable{
+    public:
+        virtual void run(){}
+        virtual ~Runnable(){}
+		virtual bool isAlive(){return true;}
+		virtual void stop() = 0;
+		virtual void start(){}
+    };
+    class IThread{
+    public:
+        IThread()
+        {
+            _logic = NULL;
+        }
+        static IThread * create(const std::string &name="START",const bool joinAble = true);
+        virtual bool isJoinable() = 0;
+        virtual bool isAlive()  = 0;
+        virtual bool start(Runnable * logic) = 0;
+        virtual void join() = 0;
+        virtual void final() = 0;
+        virtual bool isFinal() = 0;
+        virtual void run()
+        {
+            if (_logic) _logic->run();
+        }
+        virtual ~IThread(){}
+    protected:
+        Runnable *_logic;
+    };
+	template<typename LOGIC>
+    class Thread{
+    public:
+        Thread()
+        {
+           _ithread = IThread::create();
+        }
+        void start()
 		{
-			virtual void exec(Thread *e)=0;
-			virtual ~Callback(){};
-		};
-
-		typedef std::vector<Thread *> Container;  /**< ÈÝÆ÷ÀàÐÍ */
-
-		ThreadGroup();
-		~ThreadGroup();
-		void add(Thread *thread);
-		Thread *getByIndex(const Container::size_type index);
-		Thread *operator[] (const Container::size_type index);
-		void joinAll();
-		void execAll(Callback &cb);
-
-		const Container::size_type size()
-		{
-			RWLock_scope_rdlock scope_rdlock(rwlock);
-			return vts.size();
+			_logic.start();
+			_ithread->start(&_logic);
 		}
+        virtual ~Thread(){
+			if (_ithread) delete _ithread;
+			_ithread = NULL;
+		}
+		IThread * getThread(){
+			return _ithread;
+		}
+		void stop()
+		{
+			_logic.stop();
+		}
+    protected:
+        LOGIC _logic;
+		IThread *_ithread;
+    };
+    class ThreadGroup{
+    public:
+        struct Callback{
+            virtual void exec(IThread *thd) = 0;
+            virtual ~Callback(){}
+        };
+        typedef std::vector<IThread *> Threads;
+        ThreadGroup();
+        ~ThreadGroup();
+        void add(IThread * thd);
+        IThread* getByIndex(const Threads::size_type index);
+        void joinAll();
+        void execAll(Callback &cb);
+        const Threads::size_type size()
+        {
+            return vts.size();
+        }
+    private:
+        Threads vts;
+        IReadWriteMutex *_readwriteMutex;
+    };
+    void mysleep(const unsigned int sec);
+    void myusleep(const unsigned int msec);
+    
+    template<class T>
+    class shared_ptr{
+        class _counter{
+        public:
+            _counter(int u,T * t):use(u),t(t){
+                mutex = IMutex::create();
+            }
+            ~_counter(){
+                delete mutex;
+                mutex = NULL;
+            }
+            int use;
+            T * t;
+            IMutex * mutex;
+            bool release()
+            {
+                if (mutex)
+                {
+                    SafeLockMutex scope(mutex);
+                    use--;
+                    if(use == 0)
+                    {
+                        delete t;
+                        return true;
+                    }
+                }
+                return false;
+            }
+            void retain()
+            {
+                SafeLockMutex scope(mutex);
+                use++;
+            }
+        };
+    public:
+        shared_ptr(T *t):pc(new _counter(1,t)){
+            this->pt = t;
+            state = 0;
+        }
+        
+        shared_ptr(const shared_ptr<T> &rhs){
+            this->pc = rhs.pc;
+            this->pt = rhs.pt;
+            retain();
+            state = 0;
+        }
+        void release()
+        {
+            if (pc && pc->release())
+            {
+                delete pc;
+                pc = NULL;
+            }
+        }
+        ~shared_ptr(){
+            release();
+        }
+        void retain()
+        {
+            pc->retain();
+        }
+        shared_ptr<T>& operator=(const shared_ptr<T> rhs){
+            this->pt = rhs.pt;
+            this->pc = rhs.pc;
+            this->state = rhs.state;
+            retain();
+            return *this;
+        }
+        T& operator *(){ return *pt; }
+        T* operator ->() { return pt; }
+        
+        T* pointer()
+        {
+            return pt;
+        }
+        void setState(char state)
+        {
+            this->state = state;
+        }
+        bool checkState(char state)
+        {
+            return this->state == state;
+        }
+    private:
+        T *pt;
+        char state;
+        _counter* pc;
+    };
+    
+}
 
-	private:
-
-		Container vts;                /**< Ïß³ÌÏòÁ¿ */
-		RWLock rwlock;                /**< ¶ÁÐ´Ëø */
-	};
-};
+#endif
